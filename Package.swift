@@ -15,7 +15,7 @@ let package = Package(
         .library(
             name: "TuistSDK",
             targets: ["TuistSDK"]
-        )
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-openapi-runtime", from: "1.9.0"),
@@ -32,10 +32,10 @@ let package = Package(
                 .product(name: "OpenAPIURLSession", package: "swift-openapi-urlsession"),
             ],
             swiftSettings: [
-                .enableUpcomingFeature("StrictConcurrency")
+                .enableUpcomingFeature("StrictConcurrency"),
             ],
             plugins: [
-                .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator")
+                .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator"),
             ]
         ),
         .testTarget(

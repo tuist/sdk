@@ -4,10 +4,10 @@ import Foundation
 public struct Preview: Sendable {
     /// The preview id
     public let id: String
-    
+
     /// The preview version
     public let version: String?
-    
+
     /// The URL to download the preview.
     public let downloadURL: URL
 

@@ -1,6 +1,15 @@
-#!/bin/bash
-# mise description="Lint the project using SwiftLint and SwiftFormat"
-set -euo pipefail
+#!/usr/bin/env bash
+#MISE description="Lint the SDK"
+#USAGE flag "-f --fix" help="Automatically fix linting issues where possible"
 
-swiftformat $MISE_PROJECT_ROOT --lint
-swiftlint lint --quiet --config $MISE_PROJECT_ROOT/.swiftlint.yml $MISE_PROJECT_ROOT/Sources
+set -eo pipefail
+
+if [ "$usage_fix" = "true" ]; then    # Fix mode: apply automatic fixes
+    swiftformat .
+    swiftlint lint --fix --quiet --config .swiftlint.yml Sources Tests
+else
+    # Check mode: only report issues without fixing
+    swiftformat . --lint
+    swiftlint lint --quiet --config .swiftlint.yml Sources Tests
+    tuist inspect implicit-imports
+fi

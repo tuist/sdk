@@ -62,9 +62,9 @@ public struct TuistSDK: Sendable {
         self.fullHandle = fullHandle
         self.apiKey = apiKey
         self.checkInterval = checkInterval
-        self.currentBinaryId = Self.extractBinaryId()
-        self.getLatestPreviewService = GetLatestPreviewService(serverURL: serverURL, apiKey: apiKey)
-        self.appStoreBuildChecker = AppStoreBuildChecker()
+        currentBinaryId = Self.extractBinaryId()
+        getLatestPreviewService = GetLatestPreviewService(serverURL: serverURL, apiKey: apiKey)
+        appStoreBuildChecker = AppStoreBuildChecker()
     }
 
     init(
@@ -158,16 +158,17 @@ public struct TuistSDK: Sendable {
             alert.addAction(
                 UIAlertAction(title: "Cancel", style: .cancel) { _ in
                     UserDefaults.standard.set(updateInfo.id, forKey: Self.ignoredPreviewIdKey)
-                })
+                }
+            )
             alert.addAction(
                 UIAlertAction(title: "Install", style: .default) { _ in
                     UIApplication.shared.open(updateInfo.downloadURL)
-                })
+                }
+            )
 
-            guard
-                let windowScene = UIApplication.shared.connectedScenes
-                    .compactMap({ $0 as? UIWindowScene })
-                    .first(where: { $0.activationState == .foregroundActive }),
+            guard let windowScene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first(where: { $0.activationState == .foregroundActive }),
                 let rootViewController = windowScene.windows.first?.rootViewController
             else {
                 return
@@ -190,11 +191,10 @@ public struct TuistSDK: Sendable {
             throw TuistSDKError.binaryIdNotFound
         }
 
-        guard
-            let latestPreview = try await getLatestPreviewService.getLatestPreview(
-                binaryId: binaryId,
-                fullHandle: fullHandle
-            )
+        guard let latestPreview = try await getLatestPreviewService.getLatestPreview(
+            binaryId: binaryId,
+            fullHandle: fullHandle
+        )
         else {
             return nil
         }
@@ -202,7 +202,7 @@ public struct TuistSDK: Sendable {
         let hasCurrentBuild = latestPreview.builds.contains(where: { $0.binary_id == binaryId })
         if !hasCurrentBuild {
             guard let downloadURL = URL(string: latestPreview.url),
-                let bundleIdentifier = latestPreview.bundle_identifier
+                  let bundleIdentifier = latestPreview.bundle_identifier
             else {
                 throw TuistSDKError.invalidURL
             }
@@ -217,7 +217,7 @@ public struct TuistSDK: Sendable {
     }
 
     private static func extractBinaryId() -> String? {
-        for i in 0..<_dyld_image_count() {
+        for i in 0 ..< _dyld_image_count() {
             guard let header = _dyld_get_image_header(i) else { continue }
 
             let headerPtr = UnsafeRawPointer(header)
@@ -231,7 +231,7 @@ public struct TuistSDK: Sendable {
                 loadCommandPtr = headerPtr.advanced(by: MemoryLayout<mach_header>.size)
             }
 
-            for _ in 0..<header.pointee.ncmds {
+            for _ in 0 ..< header.pointee.ncmds {
                 let loadCommand = loadCommandPtr.assumingMemoryBound(to: load_command.self).pointee
 
                 if loadCommand.cmd == LC_UUID {
@@ -263,7 +263,7 @@ public enum TuistSDKError: LocalizedError, Equatable {
             return "Invalid server URL"
         case .invalidResponse:
             return "Invalid response from server"
-        case .serverError(let statusCode):
+        case let .serverError(statusCode):
             return "Server returned error status code: \(statusCode)"
         }
     }
