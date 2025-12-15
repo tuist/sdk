@@ -184,8 +184,7 @@ public struct TuistSDK: Sendable {
 
     /// Performs a single update check.
     ///
-    /// - Returns: Update info if an update is available, nil otherwise.
-    /// - Throws: `TuistSDKError.binaryIdNotFound` if the binary ID cannot be extracted.
+    /// - Returns: `Preview` if an update is available, nil otherwise.
     public func checkForUpdate() async throws -> Preview? {
         guard let binaryId = currentBinaryId else {
             throw TuistSDKError.binaryIdNotFound
@@ -200,20 +199,14 @@ public struct TuistSDK: Sendable {
         }
 
         let hasCurrentBuild = latestPreview.builds.contains(where: { $0.binary_id == binaryId })
-        if !hasCurrentBuild {
-            guard let downloadURL = URL(string: latestPreview.url),
-                  let bundleIdentifier = latestPreview.bundle_identifier
-            else {
-                throw TuistSDKError.invalidURL
-            }
-            return Preview(
-                id: latestPreview.id,
-                version: latestPreview.version,
-                downloadURL: downloadURL
-            )
-        }
+        guard !hasCurrentBuild else { return nil }
 
-        return nil
+        guard let downloadURL = URL(string: latestPreview.url) else { throw TuistSDKError.invalidURL }
+        return Preview(
+            id: latestPreview.id,
+            version: latestPreview.version,
+            downloadURL: downloadURL
+        )
     }
 
     private static func extractBinaryId() -> String? {
@@ -252,8 +245,6 @@ public struct TuistSDK: Sendable {
 public enum TuistSDKError: LocalizedError, Equatable {
     case binaryIdNotFound
     case invalidURL
-    case invalidResponse
-    case serverError(statusCode: Int)
 
     public var errorDescription: String? {
         switch self {
@@ -261,10 +252,6 @@ public enum TuistSDKError: LocalizedError, Equatable {
             return "Could not extract binary ID from the running executable"
         case .invalidURL:
             return "Invalid server URL"
-        case .invalidResponse:
-            return "Invalid response from server"
-        case let .serverError(statusCode):
-            return "Server returned error status code: \(statusCode)"
         }
     }
 }
