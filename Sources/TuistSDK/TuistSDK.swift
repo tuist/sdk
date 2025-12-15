@@ -14,22 +14,15 @@ import StoreKit
 /// Example usage:
 /// ```swift
 /// struct MyApp: App {
-///     private let tuistSDK = TuistSDK(
-///         fullHandle: "myorg/myapp",
-///         apiKey: "your-api-key"
-///     )
-///
 ///     var body: some Scene {
 ///         WindowGroup {
 ///             ContentView()
-///                 .onAppear {
+///                 .task {
 ///                     TuistSDK(
 ///                        fullHandle: "myorg/myapp",
 ///                        apiKey: "your-api-key"
 ///                     )
-///                     .startUpdateChecking { updateInfo in
-///                        print("Update available: \(updateInfo.version ?? "unknown")")
-///                     }
+///                     .monitorUpdates()
 ///                 }
 ///         }
 ///     }
@@ -83,13 +76,6 @@ public struct TuistSDK: Sendable {
         getLatestPreviewService: GetLatestPreviewServicing,
         appStoreBuildChecker: AppStoreBuildChecking
     ) {
-        let components = fullHandle.components(separatedBy: "/")
-        guard components.count == 2 else {
-            preconditionFailure(
-                "The project full handle \(fullHandle) is not in the format of account-handle/project-handle."
-            )
-        }
-
         self.serverURL = serverURL
         self.fullHandle = fullHandle
         self.apiKey = apiKey
@@ -108,7 +94,7 @@ public struct TuistSDK: Sendable {
     @discardableResult
     public func monitorUpdates(
         onUpdateAvailable: @MainActor @Sendable @escaping (Preview) -> Void
-    ) -> Task<Void, Never> {
+    ) -> Task<Void, any Error> {
         Task {
             #if targetEnvironment(simulator)
                 return
@@ -122,7 +108,7 @@ public struct TuistSDK: Sendable {
                 while !Task.isCancelled {
                     let start = ContinuousClock.now
 
-                    if let updateInfo = try? await checkForUpdate() {
+                    if let updateInfo = try await checkForUpdate() {
                         await onUpdateAvailable(updateInfo)
                     }
 
@@ -144,7 +130,7 @@ public struct TuistSDK: Sendable {
         ///
         /// - Note: Update checking is disabled on simulators and App Store builds.
         @discardableResult
-        public func monitorUpdates() -> Task<Void, Never> {
+        public func monitorUpdates() -> Task<Void, any Error> {
             monitorUpdates { updateInfo in
                 showDefaultUpdateAlert(updateInfo: updateInfo)
             }
@@ -169,16 +155,19 @@ public struct TuistSDK: Sendable {
 
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                UserDefaults.standard.set(updateInfo.id, forKey: Self.ignoredPreviewIdKey)
-            })
-            alert.addAction(UIAlertAction(title: "Install", style: .default) { _ in
-                UIApplication.shared.open(updateInfo.downloadURL)
-            })
+            alert.addAction(
+                UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                    UserDefaults.standard.set(updateInfo.id, forKey: Self.ignoredPreviewIdKey)
+                })
+            alert.addAction(
+                UIAlertAction(title: "Install", style: .default) { _ in
+                    UIApplication.shared.open(updateInfo.downloadURL)
+                })
 
-            guard let windowScene = UIApplication.shared.connectedScenes
-                .compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive }),
+            guard
+                let windowScene = UIApplication.shared.connectedScenes
+                    .compactMap({ $0 as? UIWindowScene })
+                    .first(where: { $0.activationState == .foregroundActive }),
                 let rootViewController = windowScene.windows.first?.rootViewController
             else {
                 return
@@ -201,17 +190,19 @@ public struct TuistSDK: Sendable {
             throw TuistSDKError.binaryIdNotFound
         }
 
-        guard let latestPreview = try await getLatestPreviewService.getLatestPreview(
-            binaryId: binaryId,
-            fullHandle: fullHandle
-        ) else {
+        guard
+            let latestPreview = try await getLatestPreviewService.getLatestPreview(
+                binaryId: binaryId,
+                fullHandle: fullHandle
+            )
+        else {
             return nil
         }
 
         let hasCurrentBuild = latestPreview.builds.contains(where: { $0.binary_id == binaryId })
         if !hasCurrentBuild {
             guard let downloadURL = URL(string: latestPreview.url),
-                  let bundleIdentifier = latestPreview.bundle_identifier
+                let bundleIdentifier = latestPreview.bundle_identifier
             else {
                 throw TuistSDKError.invalidURL
             }
@@ -226,7 +217,7 @@ public struct TuistSDK: Sendable {
     }
 
     private static func extractBinaryId() -> String? {
-        for i in 0 ..< _dyld_image_count() {
+        for i in 0..<_dyld_image_count() {
             guard let header = _dyld_get_image_header(i) else { continue }
 
             let headerPtr = UnsafeRawPointer(header)
@@ -240,11 +231,12 @@ public struct TuistSDK: Sendable {
                 loadCommandPtr = headerPtr.advanced(by: MemoryLayout<mach_header>.size)
             }
 
-            for _ in 0 ..< header.pointee.ncmds {
+            for _ in 0..<header.pointee.ncmds {
                 let loadCommand = loadCommandPtr.assumingMemoryBound(to: load_command.self).pointee
 
                 if loadCommand.cmd == LC_UUID {
-                    let uuidCommand = loadCommandPtr.assumingMemoryBound(to: uuid_command.self).pointee
+                    let uuidCommand = loadCommandPtr.assumingMemoryBound(to: uuid_command.self)
+                        .pointee
                     let uuid = UUID(uuid: uuidCommand.uuid)
                     return uuid.uuidString
                 }
@@ -271,7 +263,7 @@ public enum TuistSDKError: LocalizedError, Equatable {
             return "Invalid server URL"
         case .invalidResponse:
             return "Invalid response from server"
-        case let .serverError(statusCode):
+        case .serverError(let statusCode):
             return "Server returned error status code: \(statusCode)"
         }
     }

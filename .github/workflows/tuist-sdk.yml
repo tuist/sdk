@@ -1,0 +1,46 @@
+name: TuistSDK
+
+on:
+  push:
+    branches:
+      - main
+  pull_request: {}
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  MISE_EXPERIMENTAL: "1"
+
+concurrency:
+  group: tuist-sdk-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: "Release build on macOS"
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo xcode-select -s /Applications/Xcode_$(cat .xcode-version).app
+      - uses: jdx/mise-action@v2
+      - name: Run
+        run: mise run build
+
+  test:
+    name: "Test on macOS"
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo xcode-select -s /Applications/Xcode_$(cat .xcode-version).app
+      - uses: jdx/mise-action@v2
+      - name: Run
+        run: mise run test
+
+  lint:
+    name: Lint
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo xcode-select -s /Applications/Xcode_$(cat .xcode-version).app
+      - uses: jdx/mise-action@v2
+      - name: Run
+        run: mise run lint
