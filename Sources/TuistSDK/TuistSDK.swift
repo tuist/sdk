@@ -1,6 +1,5 @@
 import Foundation
 import MachO
-import StoreKit
 
 #if canImport(UIKit)
     import UIKit
