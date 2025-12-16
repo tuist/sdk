@@ -21,7 +21,7 @@ import MachO
 ///                        fullHandle: "myorg/myapp",
 ///                        apiKey: "your-api-key"
 ///                     )
-///                     .monitorUpdates()
+///                     .monitorPreviewUpdates()
 ///                 }
 ///         }
 ///     }
@@ -91,7 +91,7 @@ public struct TuistSDK: Sendable {
     ///
     /// - Note: Update checking is disabled on simulators and App Store builds.
     @discardableResult
-    public func monitorUpdates(
+    public func monitorPreviewUpdates(
         onUpdateAvailable: @MainActor @Sendable @escaping (Preview) -> Void
     ) -> Task<Void, any Error> {
         Task {
@@ -107,7 +107,7 @@ public struct TuistSDK: Sendable {
                 while !Task.isCancelled {
                     let start = ContinuousClock.now
 
-                    if let preview = try await checkForUpdate() {
+                    if let preview = try await checkForPreviewUpdate() {
                         await onUpdateAvailable(preview)
                     }
 
@@ -129,8 +129,8 @@ public struct TuistSDK: Sendable {
         ///
         /// - Note: Update checking is disabled on simulators and App Store builds.
         @discardableResult
-        public func monitorUpdates() -> Task<Void, any Error> {
-            monitorUpdates { preview in
+        public func monitorPreviewUpdates() -> Task<Void, any Error> {
+            monitorPreviewUpdates { preview in
                 showDefaultUpdateAlert(preview: preview)
             }
         }
@@ -181,10 +181,10 @@ public struct TuistSDK: Sendable {
         }
     #endif
 
-    /// Performs a single update check.
+    /// Performs a single preview update check.
     ///
     /// - Returns: `Preview` if an update is available, nil otherwise.
-    public func checkForUpdate() async throws -> Preview? {
+    public func checkForPreviewUpdate() async throws -> Preview? {
         guard let binaryId = currentBinaryId else {
             throw TuistSDKError.binaryIdNotFound
         }

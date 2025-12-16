@@ -27,37 +27,37 @@ struct TuistSDKTests {
     }
 
     @Test
-    func checkForUpdate_whenServiceReturnsNil_returnsNil() async throws {
+    func checkForPreviewUpdate_whenServiceReturnsNil_returnsNil() async throws {
         getLatestPreviewService.getLatestPreviewStub = { binaryId, fullHandle in
             #expect(binaryId == "TEST-UUID-1234")
             #expect(fullHandle == "myorg/myapp")
             return nil
         }
 
-        let result = try await makeSDK().checkForUpdate()
+        let result = try await makeSDK().checkForPreviewUpdate()
 
         #expect(result == nil)
     }
 
     @Test
-    func checkForUpdate_whenPreviewHasCurrentBuild_returnsNil() async throws {
+    func checkForPreviewUpdate_whenPreviewHasCurrentBuild_returnsNil() async throws {
         let currentBinaryId = "CURRENT-UUID-1234"
         getLatestPreviewService.getLatestPreviewStub = { _, _ in
             .test(binaryIds: [currentBinaryId])
         }
 
-        let result = try await makeSDK(currentBinaryId: currentBinaryId).checkForUpdate()
+        let result = try await makeSDK(currentBinaryId: currentBinaryId).checkForPreviewUpdate()
 
         #expect(result == nil)
     }
 
     @Test
-    func checkForUpdate_whenPreviewHasDifferentBuild_returnsUpdateInfo() async throws {
+    func checkForPreviewUpdate_whenPreviewHasDifferentBuild_returnsUpdateInfo() async throws {
         getLatestPreviewService.getLatestPreviewStub = { _, _ in
             .test(binaryIds: ["NEW-UUID-5678"], version: "1.2.0", gitBranch: "main")
         }
 
-        let result = try await makeSDK().checkForUpdate()
+        let result = try await makeSDK().checkForPreviewUpdate()
 
         #expect(result != nil)
         #expect(result?.id == "preview-1")
@@ -66,28 +66,28 @@ struct TuistSDKTests {
     }
 
     @Test
-    func checkForUpdate_whenNoBinaryId_throwsBinaryIdNotFound() async throws {
+    func checkForPreviewUpdate_whenNoBinaryId_throwsBinaryIdNotFound() async throws {
         await #expect(throws: TuistSDKError.binaryIdNotFound) {
-            _ = try await makeSDK(currentBinaryId: nil).checkForUpdate()
+            _ = try await makeSDK(currentBinaryId: nil).checkForPreviewUpdate()
         }
     }
 
     @Test
-    func monitorUpdates_whenAppStoreBuild_doesNotCheck() async throws {
+    func monitorPreviewUpdates_whenAppStoreBuild_doesNotCheck() async throws {
         getLatestPreviewService.getLatestPreviewStub = { _, _ in
             Issue.record("Service should not be called for App Store builds")
             return nil
         }
         appStoreBuildChecker.isAppStoreBuildResult = true
 
-        let task = makeSDK().monitorUpdates { _ in }
+        let task = makeSDK().monitorPreviewUpdates { _ in }
 
         try await Task.sleep(nanoseconds: 100_000_000)
         task.cancel()
     }
 
     @Test
-    func monitorUpdates_whenNotAppStoreBuild_startsChecking() async throws {
+    func monitorPreviewUpdates_whenNotAppStoreBuild_startsChecking() async throws {
         appStoreBuildChecker.isAppStoreBuildResult = false
 
         await confirmation { confirm in
@@ -96,7 +96,7 @@ struct TuistSDKTests {
                 return nil
             }
 
-            let task = makeSDK().monitorUpdates { _ in }
+            let task = makeSDK().monitorPreviewUpdates { _ in }
 
             try? await Task.sleep(nanoseconds: 100_000_000)
             task.cancel()
@@ -104,14 +104,14 @@ struct TuistSDKTests {
     }
 
     @Test
-    func monitorUpdates_whenUpdateAvailable_callsCallback() async throws {
+    func monitorPreviewUpdates_whenUpdateAvailable_callsCallback() async throws {
         getLatestPreviewService.getLatestPreviewStub = { _, _ in
             .test(binaryIds: ["DIFFERENT-UUID"])
         }
         appStoreBuildChecker.isAppStoreBuildResult = false
 
         await confirmation { confirm in
-            let task = makeSDK().monitorUpdates { updateInfo in
+            let task = makeSDK().monitorPreviewUpdates { updateInfo in
                 #expect(updateInfo.id == "preview-1")
                 confirm()
             }
