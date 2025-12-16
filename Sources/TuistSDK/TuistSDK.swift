@@ -107,8 +107,8 @@ public struct TuistSDK: Sendable {
                 while !Task.isCancelled {
                     let start = ContinuousClock.now
 
-                    if let updateInfo = try await checkForUpdate() {
-                        await onUpdateAvailable(updateInfo)
+                    if let preview = try await checkForUpdate() {
+                        await onUpdateAvailable(preview)
                     }
 
                     let elapsed = ContinuousClock.now - start
@@ -130,23 +130,23 @@ public struct TuistSDK: Sendable {
         /// - Note: Update checking is disabled on simulators and App Store builds.
         @discardableResult
         public func monitorUpdates() -> Task<Void, any Error> {
-            monitorUpdates { updateInfo in
-                showDefaultUpdateAlert(updateInfo: updateInfo)
+            monitorUpdates { preview in
+                showDefaultUpdateAlert(preview: preview)
             }
         }
 
         private static let ignoredPreviewIdKey = "TuistSDK.ignoredPreviewId"
 
         @MainActor
-        private func showDefaultUpdateAlert(updateInfo: Preview) {
+        private func showDefaultUpdateAlert(preview: Preview) {
             let ignoredPreviewId = UserDefaults.standard.string(forKey: Self.ignoredPreviewIdKey)
-            if ignoredPreviewId == updateInfo.id {
+            if ignoredPreviewId == preview.id {
                 return
             }
 
             let title = "Update Available"
             let message: String
-            if let version = updateInfo.version {
+            if let version = preview.version {
                 message = "A new version (\(version)) is available. Would you like to install it?"
             } else {
                 message = "A new version is available. Would you like to install it?"
@@ -156,12 +156,12 @@ public struct TuistSDK: Sendable {
 
             alert.addAction(
                 UIAlertAction(title: "Cancel", style: .cancel) { _ in
-                    UserDefaults.standard.set(updateInfo.id, forKey: Self.ignoredPreviewIdKey)
+                    UserDefaults.standard.set(preview.id, forKey: Self.ignoredPreviewIdKey)
                 }
             )
             alert.addAction(
                 UIAlertAction(title: "Install", style: .default) { _ in
-                    UIApplication.shared.open(updateInfo.downloadURL)
+                    UIApplication.shared.open(preview.deviceURL)
                 }
             )
 
@@ -200,11 +200,11 @@ public struct TuistSDK: Sendable {
         let hasCurrentBuild = latestPreview.builds.contains(where: { $0.binary_id == binaryId })
         guard !hasCurrentBuild else { return nil }
 
-        guard let downloadURL = URL(string: latestPreview.url) else { throw TuistSDKError.invalidURL }
+        guard let deviceURL = URL(string: latestPreview.device_url) else { throw TuistSDKError.invalidURL }
         return Preview(
             id: latestPreview.id,
             version: latestPreview.version,
-            downloadURL: downloadURL
+            deviceURL: deviceURL
         )
     }
 

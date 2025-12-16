@@ -8,16 +8,16 @@ public struct Preview: Sendable {
     /// The preview version
     public let version: String?
 
-    /// The URL to download the preview.
-    public let downloadURL: URL
+    /// The URL to open the preview on device.
+    public let deviceURL: URL
 
     public init(
         id: String,
         version: String?,
-        downloadURL: URL
+        deviceURL: URL
     ) {
         self.id = id
         self.version = version
-        self.downloadURL = downloadURL
+        self.deviceURL = deviceURL
     }
 }

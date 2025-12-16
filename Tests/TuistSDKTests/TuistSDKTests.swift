@@ -62,7 +62,7 @@ struct TuistSDKTests {
         #expect(result != nil)
         #expect(result?.id == "preview-1")
         #expect(result?.version == "1.2.0")
-        #expect(result?.downloadURL == URL(string: "https://example.com/preview"))
+        #expect(result?.deviceURL == URL(string: "itms-services://example.com"))
     }
 
     @Test

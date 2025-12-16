@@ -9,7 +9,7 @@ extension Components.Schemas.Preview {
         displayName: String? = "My App",
         version: String? = nil,
         gitBranch: String? = nil,
-        url: String = "https://example.com/preview"
+        deviceUrl: String = "itms-services://example.com"
     ) -> Self {
         Components.Schemas.Preview(
             builds: binaryIds.map { binaryId in
@@ -23,7 +23,7 @@ extension Components.Schemas.Preview {
             },
             bundle_identifier: bundleIdentifier,
             created_from_ci: false,
-            device_url: "itms-services://example.com",
+            device_url: deviceUrl,
             display_name: displayName,
             git_branch: gitBranch,
             icon_url: "https://example.com/icon.png",
@@ -31,7 +31,7 @@ extension Components.Schemas.Preview {
             inserted_at: "2024-01-01T00:00:00Z",
             qr_code_url: "https://example.com/qr.png",
             supported_platforms: [.ios],
-            url: url,
+            url: "https://example.com/preview",
             version: version
         )
     }
