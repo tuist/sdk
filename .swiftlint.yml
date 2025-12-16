@@ -1,3 +1,6 @@
+excluded:
+  - Sources/TuistSDK/Client.swift
+  - Sources/TuistSDK/Types.swift
 disabled_rules:
   - trailing_whitespace
   - trailing_comma
