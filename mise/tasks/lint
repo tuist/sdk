@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Lint the SDK"
+#USAGE flag "-f --fix" help="Automatically fix linting issues where possible"
+
+set -eo pipefail
+
+if [ "$usage_fix" = "true" ]; then    # Fix mode: apply automatic fixes
+    swiftformat .
+    swiftlint lint --fix --quiet --config .swiftlint.yml Sources Tests
+else
+    # Check mode: only report issues without fixing
+    swiftformat . --lint
+    swiftlint lint --quiet --config .swiftlint.yml Sources Tests
+fi

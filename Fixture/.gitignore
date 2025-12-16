@@ -1,0 +1,5 @@
+*.xcarchive
+*.ipa
+*.xcodeproj/xcuserdata
+*.xcodeproj/*.xcworkspace/xcuserdata
+Packaging.log
