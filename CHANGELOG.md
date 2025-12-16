@@ -1,6 +1,14 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## What's Changed in 0.1.3<!-- RELEASE NOTES START -->
+
+### 🐛 Bug Fixes
+
+* downgrade Swift tools version by [@fortmarek](https://github.com/fortmarek) in [#5](https://github.com/tuist/sdk/pull/5)
+
+**Full Changelog**: https://github.com/tuist/sdk/compare/0.1.2...0.1.3
+
 ## What's Changed in 0.1.2<!-- RELEASE NOTES START -->
 
 ### 🐛 Bug Fixes
