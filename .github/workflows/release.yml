@@ -35,6 +35,15 @@ jobs:
       - name: Check if there are releasable changes
         id: is-releasable
         run: |
+          next_version=$(git cliff --bumped-version)
+
+          # Check if tag already exists
+          if git rev-parse "$next_version" >/dev/null 2>&1; then
+            echo "Tag $next_version already exists, skipping release"
+            echo "should-release=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
           bumped_output=$(git cliff --bump)
 
           if [ -f CHANGELOG.md ]; then
