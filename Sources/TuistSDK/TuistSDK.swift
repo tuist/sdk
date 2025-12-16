@@ -215,7 +215,9 @@ public struct TuistSDK: Sendable {
         let hasCurrentBuild = latestPreview.builds.contains(where: { $0.binary_id == binaryId })
         guard !hasCurrentBuild else { return nil }
 
-        guard let deviceURL = URL(string: latestPreview.device_url) else { throw TuistSDKError.invalidURL }
+        guard let deviceURL = URL(string: latestPreview.device_url) else {
+            throw TuistSDKError.invalidURL
+        }
         return Preview(
             id: latestPreview.id,
             version: latestPreview.version,

@@ -36,7 +36,12 @@ jobs:
         id: is-releasable
         run: |
           bumped_output=$(git cliff --bump)
-          changelog_content=$(cat CHANGELOG.md)
+
+          if [ -f CHANGELOG.md ]; then
+            changelog_content=$(cat CHANGELOG.md)
+          else
+            changelog_content=""
+          fi
 
           bumped_hash=$(echo -n "$bumped_output" | shasum -a 256 | awk '{print $1}')
           changelog_hash=$(echo -n "$changelog_content" | shasum -a 256 | awk '{print $1}')
