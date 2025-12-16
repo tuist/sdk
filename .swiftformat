@@ -1,5 +1,6 @@
 # file options
 
+--exclude Sources/TuistSDK/Client.swift,Sources/TuistSDK/Types.swift
 --symlinks ignore
 --disable hoistAwait
 --disable hoistTry

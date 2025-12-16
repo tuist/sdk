@@ -19,7 +19,6 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-openapi-runtime", from: "1.9.0"),
-        .package(url: "https://github.com/apple/swift-openapi-generator", from: "1.10.3"),
         .package(url: "https://github.com/apple/swift-http-types", from: "1.5.1"),
         .package(url: "https://github.com/apple/swift-openapi-urlsession", from: "1.2.0"),
     ],
@@ -33,9 +32,6 @@ let package = Package(
             ],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
-            ],
-            plugins: [
-                .plugin(name: "OpenAPIGenerator", package: "swift-openapi-generator"),
             ]
         ),
         .testTarget(
