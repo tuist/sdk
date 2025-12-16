@@ -5,6 +5,21 @@ import MachO
     import UIKit
 #endif
 
+/// Errors that can occur when using TuistSDK.
+public enum TuistSDKError: LocalizedError, Equatable {
+    case binaryIdNotFound
+    case invalidURL
+
+    public var errorDescription: String? {
+        switch self {
+        case .binaryIdNotFound:
+            return "Could not extract binary ID from the running executable"
+        case .invalidURL:
+            return "Invalid server URL"
+        }
+    }
+}
+
 /// TuistSDK provides automatic update checking for Tuist Previews.
 ///
 /// Use this SDK to detect when a newer
@@ -237,20 +252,5 @@ public struct TuistSDK: Sendable {
             }
         }
         return nil
-    }
-}
-
-/// Errors that can occur when using TuistSDK.
-public enum TuistSDKError: LocalizedError, Equatable {
-    case binaryIdNotFound
-    case invalidURL
-
-    public var errorDescription: String? {
-        switch self {
-        case .binaryIdNotFound:
-            return "Could not extract binary ID from the running executable"
-        case .invalidURL:
-            return "Invalid server URL"
-        }
     }
 }
