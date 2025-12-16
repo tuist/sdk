@@ -1,6 +1,14 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## What's Changed in 0.1.2<!-- RELEASE NOTES START -->
+
+### 🐛 Bug Fixes
+
+* update API code by [@fortmarek](https://github.com/fortmarek) in [#4](https://github.com/tuist/sdk/pull/4)
+
+**Full Changelog**: https://github.com/tuist/sdk/compare/0.1.1...0.1.2
+
 ## What's Changed in 0.1.1<!-- RELEASE NOTES START -->
 
 ### 🐛 Bug Fixes
