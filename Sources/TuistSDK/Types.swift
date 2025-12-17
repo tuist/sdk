@@ -4127,49 +4127,6 @@ internal enum Components {
                 typealias CodingKeys = Components.Schemas.BundleArtifact.CodingKeys
             }
         }
-        /// - Remark: Generated from `#/components/schemas/DuplicateAppBuildError`.
-        internal struct DuplicateAppBuildError: Codable, Hashable, Sendable {
-            /// Error code
-            ///
-            /// - Remark: Generated from `#/components/schemas/DuplicateAppBuildError/code`.
-            internal enum codePayload: String, Codable, Hashable, Sendable, CaseIterable {
-                case duplicate_app_build = "duplicate_app_build"
-            }
-            /// Error code
-            ///
-            /// - Remark: Generated from `#/components/schemas/DuplicateAppBuildError/code`.
-            internal var code: Components.Schemas.DuplicateAppBuildError.codePayload
-            /// A human-readable error message
-            ///
-            /// - Remark: Generated from `#/components/schemas/DuplicateAppBuildError/message`.
-            internal var message: Swift.String
-            /// - Remark: Generated from `#/components/schemas/DuplicateAppBuildError/status`.
-            internal enum statusPayload: String, Codable, Hashable, Sendable, CaseIterable {
-                case error = "error"
-            }
-            /// - Remark: Generated from `#/components/schemas/DuplicateAppBuildError/status`.
-            internal var status: Components.Schemas.DuplicateAppBuildError.statusPayload
-            /// Creates a new `DuplicateAppBuildError`.
-            ///
-            /// - Parameters:
-            ///   - code: Error code
-            ///   - message: A human-readable error message
-            ///   - status:
-            internal init(
-                code: Components.Schemas.DuplicateAppBuildError.codePayload,
-                message: Swift.String,
-                status: Components.Schemas.DuplicateAppBuildError.statusPayload
-            ) {
-                self.code = code
-                self.message = message
-                self.status = status
-            }
-            internal enum CodingKeys: String, CodingKey {
-                case code
-                case message
-                case status
-            }
-        }
         /// Represents a single build run.
         ///
         /// - Remark: Generated from `#/components/schemas/RunsBuild`.
@@ -8058,56 +8015,13 @@ internal enum Operations {
             internal struct Conflict: Sendable, Hashable {
                 /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content`.
                 internal enum Body: Sendable, Hashable {
-                    /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/json`.
-                    internal struct jsonPayload: Codable, Hashable, Sendable {
-                        /// Error code
-                        ///
-                        /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/json/code`.
-                        internal enum codePayload: String, Codable, Hashable, Sendable, CaseIterable {
-                            case duplicate_app_build = "duplicate_app_build"
-                        }
-                        /// Error code
-                        ///
-                        /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/json/code`.
-                        internal var code: Operations.startPreviewsMultipartUpload.Output.Conflict.Body.jsonPayload.codePayload
-                        /// A human-readable error message
-                        ///
-                        /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/json/message`.
-                        internal var message: Swift.String
-                        /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/json/status`.
-                        internal enum statusPayload: String, Codable, Hashable, Sendable, CaseIterable {
-                            case error = "error"
-                        }
-                        /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/json/status`.
-                        internal var status: Operations.startPreviewsMultipartUpload.Output.Conflict.Body.jsonPayload.statusPayload
-                        /// Creates a new `jsonPayload`.
-                        ///
-                        /// - Parameters:
-                        ///   - code: Error code
-                        ///   - message: A human-readable error message
-                        ///   - status:
-                        internal init(
-                            code: Operations.startPreviewsMultipartUpload.Output.Conflict.Body.jsonPayload.codePayload,
-                            message: Swift.String,
-                            status: Operations.startPreviewsMultipartUpload.Output.Conflict.Body.jsonPayload.statusPayload
-                        ) {
-                            self.code = code
-                            self.message = message
-                            self.status = status
-                        }
-                        internal enum CodingKeys: String, CodingKey {
-                            case code
-                            case message
-                            case status
-                        }
-                    }
                     /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/application\/json`.
-                    case json(Operations.startPreviewsMultipartUpload.Output.Conflict.Body.jsonPayload)
+                    case json(Components.Schemas._Error)
                     /// The associated value of the enum case if `self` is `.json`.
                     ///
                     /// - Throws: An error if `self` is not `.json`.
                     /// - SeeAlso: `.json`.
-                    internal var json: Operations.startPreviewsMultipartUpload.Output.Conflict.Body.jsonPayload {
+                    internal var json: Components.Schemas._Error {
                         get throws {
                             switch self {
                             case let .json(body):
@@ -8126,7 +8040,7 @@ internal enum Operations {
                     self.body = body
                 }
             }
-            /// An app build with the same binary_id and build_version already exists
+            /// An app build with the same binary ID and build version already exists
             ///
             /// - Remark: Generated from `#/paths//api/projects/{account_handle}/{project_handle}/previews/start/post(startPreviewsMultipartUpload)/responses/409`.
             ///
@@ -13538,7 +13452,7 @@ internal enum Operations {
                 /// The CFBundleVersion of the running app.
                 ///
                 /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/latest/GET/query/build_version`.
-                internal var build_version: Swift.String?
+                internal var build_version: Swift.String
                 /// Creates a new `Query`.
                 ///
                 /// - Parameters:
@@ -13546,7 +13460,7 @@ internal enum Operations {
                 ///   - build_version: The CFBundleVersion of the running app.
                 internal init(
                     binary_id: Swift.String,
-                    build_version: Swift.String? = nil
+                    build_version: Swift.String
                 ) {
                     self.binary_id = binary_id
                     self.build_version = build_version
