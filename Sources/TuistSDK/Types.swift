@@ -142,7 +142,7 @@ internal protocol APIProtocol: Sendable {
     func generateCacheArtifactMultipartUploadURL(_ input: Operations.generateCacheArtifactMultipartUploadURL.Input) async throws -> Operations.generateCacheArtifactMultipartUploadURL.Output
     /// Get the latest preview for a binary.
     ///
-    /// Given a binary ID (Mach-O UUID), returns the latest preview on the same track (bundle identifier and git branch). Returns nil if no matching build is found.
+    /// Given a binary ID (Mach-O UUID) and build version (CFBundleVersion), returns the latest preview on the same track (bundle identifier and git branch). Returns nil if no matching build is found.
     ///
     /// - Remark: HTTP `GET /api/projects/{account_handle}/{project_handle}/previews/latest`.
     /// - Remark: Generated from `#/paths//api/projects/{account_handle}/{project_handle}/previews/latest/get(getLatestPreview)`.
@@ -742,7 +742,7 @@ extension APIProtocol {
     }
     /// Get the latest preview for a binary.
     ///
-    /// Given a binary ID (Mach-O UUID), returns the latest preview on the same track (bundle identifier and git branch). Returns nil if no matching build is found.
+    /// Given a binary ID (Mach-O UUID) and build version (CFBundleVersion), returns the latest preview on the same track (bundle identifier and git branch). Returns nil if no matching build is found.
     ///
     /// - Remark: HTTP `GET /api/projects/{account_handle}/{project_handle}/previews/latest`.
     /// - Remark: Generated from `#/paths//api/projects/{account_handle}/{project_handle}/previews/latest/get(getLatestPreview)`.
@@ -7622,10 +7622,14 @@ internal enum Operations {
             internal enum Body: Sendable, Hashable {
                 /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/requestBody/json`.
                 internal struct jsonPayload: Codable, Hashable, Sendable {
-                    /// The Mach-O UUID of the binary (for update checking).
+                    /// The Mach-O UUID of the binary.
                     ///
                     /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/requestBody/json/binary_id`.
                     internal var binary_id: Swift.String?
+                    /// The CFBundleVersion of the app.
+                    ///
+                    /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/requestBody/json/build_version`.
+                    internal var build_version: Swift.String?
                     /// The bundle identifier of the preview.
                     ///
                     /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/requestBody/json/bundle_identifier`.
@@ -7668,7 +7672,8 @@ internal enum Operations {
                     /// Creates a new `jsonPayload`.
                     ///
                     /// - Parameters:
-                    ///   - binary_id: The Mach-O UUID of the binary (for update checking).
+                    ///   - binary_id: The Mach-O UUID of the binary.
+                    ///   - build_version: The CFBundleVersion of the app.
                     ///   - bundle_identifier: The bundle identifier of the preview.
                     ///   - display_name: The display name of the preview.
                     ///   - git_branch: The git branch associated with the preview.
@@ -7679,6 +7684,7 @@ internal enum Operations {
                     ///   - version: The version of the preview.
                     internal init(
                         binary_id: Swift.String? = nil,
+                        build_version: Swift.String? = nil,
                         bundle_identifier: Swift.String? = nil,
                         display_name: Swift.String? = nil,
                         git_branch: Swift.String? = nil,
@@ -7689,6 +7695,7 @@ internal enum Operations {
                         version: Swift.String? = nil
                     ) {
                         self.binary_id = binary_id
+                        self.build_version = build_version
                         self.bundle_identifier = bundle_identifier
                         self.display_name = display_name
                         self.git_branch = git_branch
@@ -7700,6 +7707,7 @@ internal enum Operations {
                     }
                     internal enum CodingKeys: String, CodingKey {
                         case binary_id
+                        case build_version
                         case bundle_identifier
                         case display_name
                         case git_branch
@@ -7999,6 +8007,57 @@ internal enum Operations {
                     default:
                         try throwUnexpectedResponseStatus(
                             expectedStatus: "notFound",
+                            response: self
+                        )
+                    }
+                }
+            }
+            internal struct Conflict: Sendable, Hashable {
+                /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content`.
+                internal enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/start/POST/responses/409/content/application\/json`.
+                    case json(Components.Schemas._Error)
+                    /// The associated value of the enum case if `self` is `.json`.
+                    ///
+                    /// - Throws: An error if `self` is not `.json`.
+                    /// - SeeAlso: `.json`.
+                    internal var json: Components.Schemas._Error {
+                        get throws {
+                            switch self {
+                            case let .json(body):
+                                return body
+                            }
+                        }
+                    }
+                }
+                /// Received HTTP response body
+                internal var body: Operations.startPreviewsMultipartUpload.Output.Conflict.Body
+                /// Creates a new `Conflict`.
+                ///
+                /// - Parameters:
+                ///   - body: Received HTTP response body
+                internal init(body: Operations.startPreviewsMultipartUpload.Output.Conflict.Body) {
+                    self.body = body
+                }
+            }
+            /// An app build with the same binary ID and build version already exists
+            ///
+            /// - Remark: Generated from `#/paths//api/projects/{account_handle}/{project_handle}/previews/start/post(startPreviewsMultipartUpload)/responses/409`.
+            ///
+            /// HTTP response code: `409 conflict`.
+            case conflict(Operations.startPreviewsMultipartUpload.Output.Conflict)
+            /// The associated value of the enum case if `self` is `.conflict`.
+            ///
+            /// - Throws: An error if `self` is not `.conflict`.
+            /// - SeeAlso: `.conflict`.
+            internal var conflict: Operations.startPreviewsMultipartUpload.Output.Conflict {
+                get throws {
+                    switch self {
+                    case let .conflict(response):
+                        return response
+                    default:
+                        try throwUnexpectedResponseStatus(
+                            expectedStatus: "conflict",
                             response: self
                         )
                     }
@@ -13353,7 +13412,7 @@ internal enum Operations {
     }
     /// Get the latest preview for a binary.
     ///
-    /// Given a binary ID (Mach-O UUID), returns the latest preview on the same track (bundle identifier and git branch). Returns nil if no matching build is found.
+    /// Given a binary ID (Mach-O UUID) and build version (CFBundleVersion), returns the latest preview on the same track (bundle identifier and git branch). Returns nil if no matching build is found.
     ///
     /// - Remark: HTTP `GET /api/projects/{account_handle}/{project_handle}/previews/latest`.
     /// - Remark: Generated from `#/paths//api/projects/{account_handle}/{project_handle}/previews/latest/get(getLatestPreview)`.
@@ -13390,12 +13449,21 @@ internal enum Operations {
                 ///
                 /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/latest/GET/query/binary_id`.
                 internal var binary_id: Swift.String
+                /// The CFBundleVersion of the running app.
+                ///
+                /// - Remark: Generated from `#/paths/api/projects/{account_handle}/{project_handle}/previews/latest/GET/query/build_version`.
+                internal var build_version: Swift.String
                 /// Creates a new `Query`.
                 ///
                 /// - Parameters:
                 ///   - binary_id: The Mach-O UUID of the running binary.
-                internal init(binary_id: Swift.String) {
+                ///   - build_version: The CFBundleVersion of the running app.
+                internal init(
+                    binary_id: Swift.String,
+                    build_version: Swift.String
+                ) {
                     self.binary_id = binary_id
+                    self.build_version = build_version
                 }
             }
             internal var query: Operations.getLatestPreview.Input.Query
