@@ -8,12 +8,15 @@ import MachO
 /// Errors that can occur when using TuistSDK.
 public enum TuistSDKError: LocalizedError, Equatable {
     case binaryIdNotFound
+    case buildVersionNotFound
     case invalidURL
 
     public var errorDescription: String? {
         switch self {
         case .binaryIdNotFound:
             return "Could not extract binary ID from the running executable"
+        case .buildVersionNotFound:
+            return "Could not extract build version (CFBundleVersion) from the app bundle"
         case .invalidURL:
             return "Invalid server URL"
         }
@@ -56,6 +59,7 @@ public struct TuistSDK: Sendable {
     public let checkInterval: TimeInterval
 
     private let currentBinaryId: String?
+    private let currentBuildVersion: String?
     private let getLatestPreviewService: GetLatestPreviewServicing
     private let appStoreBuildChecker: AppStoreBuildChecking
 
@@ -77,6 +81,7 @@ public struct TuistSDK: Sendable {
         self.apiKey = apiKey
         self.checkInterval = checkInterval
         currentBinaryId = Self.extractBinaryId()
+        currentBuildVersion = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
         getLatestPreviewService = GetLatestPreviewService(serverURL: serverURL, apiKey: apiKey)
         appStoreBuildChecker = AppStoreBuildChecker()
     }
@@ -87,6 +92,7 @@ public struct TuistSDK: Sendable {
         serverURL: URL,
         checkInterval: TimeInterval,
         currentBinaryId: String?,
+        currentBuildVersion: String?,
         getLatestPreviewService: GetLatestPreviewServicing,
         appStoreBuildChecker: AppStoreBuildChecking
     ) {
@@ -95,6 +101,7 @@ public struct TuistSDK: Sendable {
         self.apiKey = apiKey
         self.checkInterval = checkInterval
         self.currentBinaryId = currentBinaryId
+        self.currentBuildVersion = currentBuildVersion
         self.getLatestPreviewService = getLatestPreviewService
         self.appStoreBuildChecker = appStoreBuildChecker
     }
@@ -204,8 +211,13 @@ public struct TuistSDK: Sendable {
             throw TuistSDKError.binaryIdNotFound
         }
 
+        guard let buildVersion = currentBuildVersion else {
+            throw TuistSDKError.buildVersionNotFound
+        }
+
         guard let latestPreview = try await getLatestPreviewService.getLatestPreview(
             binaryId: binaryId,
+            buildVersion: buildVersion,
             fullHandle: fullHandle
         )
         else {

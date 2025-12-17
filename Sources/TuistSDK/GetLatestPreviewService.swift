@@ -5,6 +5,7 @@ import OpenAPIURLSession
 protocol GetLatestPreviewServicing: Sendable {
     func getLatestPreview(
         binaryId: String,
+        buildVersion: String,
         fullHandle: String
     ) async throws -> Components.Schemas.Preview?
 }
@@ -38,6 +39,7 @@ struct GetLatestPreviewService: GetLatestPreviewServicing {
 
     func getLatestPreview(
         binaryId: String,
+        buildVersion: String,
         fullHandle: String
     ) async throws -> Components.Schemas.Preview? {
         let components = fullHandle.components(separatedBy: "/")
@@ -59,7 +61,7 @@ struct GetLatestPreviewService: GetLatestPreviewServicing {
                     account_handle: accountHandle,
                     project_handle: projectHandle
                 ),
-                query: .init(binary_id: binaryId)
+                query: .init(binary_id: binaryId, build_version: buildVersion)
             )
         )
 

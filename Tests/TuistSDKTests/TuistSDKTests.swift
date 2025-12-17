@@ -13,7 +13,8 @@ struct TuistSDKTests {
         apiKey: String = "test-api-key",
         serverURL: URL = URL(string: "https://test.tuist.dev")!,
         checkInterval: TimeInterval = 600,
-        currentBinaryId: String? = "TEST-UUID-1234"
+        currentBinaryId: String? = "TEST-UUID-1234",
+        currentBuildVersion: String? = "1"
     ) -> TuistSDK {
         TuistSDK(
             fullHandle: fullHandle,
@@ -21,6 +22,7 @@ struct TuistSDKTests {
             serverURL: serverURL,
             checkInterval: checkInterval,
             currentBinaryId: currentBinaryId,
+            currentBuildVersion: currentBuildVersion,
             getLatestPreviewService: getLatestPreviewService,
             appStoreBuildChecker: appStoreBuildChecker
         )
@@ -28,8 +30,9 @@ struct TuistSDKTests {
 
     @Test
     func checkForPreviewUpdate_whenServiceReturnsNil_returnsNil() async throws {
-        getLatestPreviewService.getLatestPreviewStub = { binaryId, fullHandle in
+        getLatestPreviewService.getLatestPreviewStub = { binaryId, buildVersion, fullHandle in
             #expect(binaryId == "TEST-UUID-1234")
+            #expect(buildVersion == "1")
             #expect(fullHandle == "myorg/myapp")
             return nil
         }
@@ -42,7 +45,7 @@ struct TuistSDKTests {
     @Test
     func checkForPreviewUpdate_whenPreviewHasCurrentBuild_returnsNil() async throws {
         let currentBinaryId = "CURRENT-UUID-1234"
-        getLatestPreviewService.getLatestPreviewStub = { _, _ in
+        getLatestPreviewService.getLatestPreviewStub = { _, _, _ in
             .test(binaryIds: [currentBinaryId])
         }
 
@@ -53,7 +56,7 @@ struct TuistSDKTests {
 
     @Test
     func checkForPreviewUpdate_whenPreviewHasDifferentBuild_returnsUpdateInfo() async throws {
-        getLatestPreviewService.getLatestPreviewStub = { _, _ in
+        getLatestPreviewService.getLatestPreviewStub = { _, _, _ in
             .test(binaryIds: ["NEW-UUID-5678"], version: "1.2.0", gitBranch: "main")
         }
 
@@ -74,7 +77,7 @@ struct TuistSDKTests {
 
     @Test
     func monitorPreviewUpdates_whenAppStoreBuild_doesNotCheck() async throws {
-        getLatestPreviewService.getLatestPreviewStub = { _, _ in
+        getLatestPreviewService.getLatestPreviewStub = { _, _, _ in
             Issue.record("Service should not be called for App Store builds")
             return nil
         }
@@ -91,7 +94,7 @@ struct TuistSDKTests {
         appStoreBuildChecker.isAppStoreBuildResult = false
 
         await confirmation { confirm in
-            getLatestPreviewService.getLatestPreviewStub = { _, _ in
+            getLatestPreviewService.getLatestPreviewStub = { _, _, _ in
                 confirm()
                 return nil
             }
@@ -105,7 +108,7 @@ struct TuistSDKTests {
 
     @Test
     func monitorPreviewUpdates_whenUpdateAvailable_callsCallback() async throws {
-        getLatestPreviewService.getLatestPreviewStub = { _, _ in
+        getLatestPreviewService.getLatestPreviewStub = { _, _, _ in
             .test(binaryIds: ["DIFFERENT-UUID"])
         }
         appStoreBuildChecker.isAppStoreBuildResult = false
@@ -118,6 +121,13 @@ struct TuistSDKTests {
 
             try? await Task.sleep(nanoseconds: 100_000_000)
             task.cancel()
+        }
+    }
+
+    @Test
+    func checkForPreviewUpdate_whenNoBuildVersion_throwsBuildVersionNotFound() async throws {
+        await #expect(throws: TuistSDKError.buildVersionNotFound) {
+            _ = try await makeSDK(currentBuildVersion: nil).checkForPreviewUpdate()
         }
     }
 }
